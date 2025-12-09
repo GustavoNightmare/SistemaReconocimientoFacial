@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pruebas Gym - Reconocimiento facial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f2f2f2;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .video-container,
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-container img {
+            max-width: 640px;
+            border-radius: 8px;
+        }
+
+        .controls form {
+            margin-bottom: 10px;
+        }
+
+        .mensaje {
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .ok {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Pruebas de reconocimiento facial - Gimnasio</h1>
+
+    <div class="container">
+        <div class="video-container">
+            <h2>Cámara</h2>
+            <img src="{{ url_for('video_feed') }}" alt="Video en vivo">
+        </div>
+
+        <div class="controls">
+            <h2>Controles</h2>
+
+            <form method="POST" action="{{ url_for('registrar') }}">
+                <label>Nombre / ID del socio (opcional):</label><br>
+                <input type="text" name="nombre" placeholder="Ej: Juan Pérez"><br><br>
+                <button type="submit">Guardar rostro</button>
+            </form>
+
+            <form method="POST" action="{{ url_for('reconocer') }}">
+                <button type="submit">Modo reconocimiento</button>
+            </form>
+
+            <div class="mensaje
+            {% if mensaje and '✅' in mensaje %}ok{% elif mensaje and '⛔' in mensaje %}error{% endif %}">
+                {{ mensaje }}
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

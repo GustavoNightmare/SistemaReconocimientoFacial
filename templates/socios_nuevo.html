@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Nuevo usuario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Nuevo usuario</h1>
+    <a href="{{ url_for('socios_listado') }}" class="btn btn-outline-secondary">
+        Volver al listado
+    </a>
+</div>
+
+<form method="post" class="card p-3 shadow-sm">
+    <div class="row">
+        <div class="col-md-6">
+            <h5>Datos del usuario</h5>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" name="nombre"
+                    value="{{ request.form.nombre or '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="apellido" class="form-label">Apellido</label>
+                <input type="text" class="form-control" id="apellido" name="apellido"
+                    value="{{ request.form.apellido or '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="cedula" class="form-label">Cédula</label>
+                <input type="text" class="form-control" id="cedula" name="cedula"
+                    value="{{ request.form.cedula or '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="edad" class="form-label">Edad</label>
+                <input type="number" class="form-control" id="edad" name="edad" value="{{ request.form.edad or '' }}"
+                    min="0">
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h5>Membresía inicial</h5>
+            <div class="mb-3">
+                <label for="tipo_codigo" class="form-label">Tipo de membresía</label>
+                <select class="form-select" id="tipo_codigo" name="tipo_codigo" required>
+                    <option value="">Selecciona una opción</option>
+                    {% for t in tipos %}
+                    <option value="{{ t[0] }}" {% if request.form.tipo_codigo==t[0] %}selected{% endif %}>
+                        {{ t[0] }} - {{ t[1] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="valor_pagado" class="form-label">Valor pagado</label>
+                <input type="number" class="form-control" id="valor_pagado" name="valor_pagado" min="0" step="1000"
+                    value="{{ request.form.valor_pagado or '' }}">
+                <div class="form-text">
+                    Monto que el usuario paga por esta membresía (opcional).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+        <button type="submit" class="btn btn-primary">Guardar usuario</button>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Detalle de usuario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{{ socio.nombre }} {{ socio.apellido }} (#{{ socio.id }})</h1>
+    <div>
+        <a href="{{ url_for('socios_listado') }}" class="btn btn-outline-secondary">Volver</a>
+        <a href="{{ url_for('socio_editar', socio_id=socio.id) }}" class="btn btn-outline-primary">Editar</a>
+        <a href="{{ url_for('membresia_nueva', socio_id=socio.id) }}" class="btn btn-primary">Renovar membresía</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Datos del usuario</div>
+            <div class="card-body">
+                <p><strong>Nombre:</strong> {{ socio.nombre }} {{ socio.apellido }}</p>
+                <p><strong>Cédula:</strong> {{ socio.cedula }}</p>
+                <p><strong>Edad:</strong> {{ socio.edad or '—' }}</p>
+                <p>
+                    <strong>Activo:</strong>
+                    {% if socio.activo %}
+                    <span class="badge bg-success">Sí</span>
+                    {% else %}
+                    <span class="badge bg-secondary">No</span>
+                    {% endif %}
+                </p>
+                <p><strong>Fecha registro:</strong> {{ socio.fecha_registro }}</p>
+                <p><strong>Última entrada:</strong> {{ socio.ultima_entrada or 'Sin registros' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Membresía activa</div>
+            <div class="card-body">
+                {% if membresia_activa %}
+                <p><strong>Tipo:</strong> {{ membresia_activa.tipo_codigo }} - {{ membresia_activa.tipo_descripcion }}
+                </p>
+                <p><strong>Inicio:</strong> {{ membresia_activa.fecha_inicio }}</p>
+                <p><strong>Fin:</strong> {{ membresia_activa.fecha_fin }}</p>
+                <p><strong>Valor pagado:</strong> {{ membresia_activa.valor_pagado }}</p>
+                <p><strong>Creada:</strong> {{ membresia_activa.creado_en }}</p>
+                {% else %}
+                <p class="text-danger mb-0">El usuario no tiene una membresía activa.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('socio_rostro', socio_id=socio.id) }}" class="btn btn-warning">
+        Capturar / actualizar rostro
+    </a>
+</div>
+{% endblock %}

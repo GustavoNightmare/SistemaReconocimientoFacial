@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Usuarios</h1>
+    <a href="{{ url_for('socios_nuevo') }}" class="btn btn-primary">Nuevo usuario</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-6">
+        <input type="text" class="form-control" name="q" placeholder="Buscar por nombre, apellido o cédula"
+            value="{{ q }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-secondary w-100">Buscar</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Cédula</th>
+                        <th>Edad</th>
+                        <th>Activo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in socios %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>{{ s.nombre }} {{ s.apellido }}</td>
+                        <td>{{ s.cedula }}</td>
+                        <td>{{ s.edad or '—' }}</td>
+                        <td>
+                            {% if s.activo %}
+                            <span class="badge bg-success">Sí</span>
+                            {% else %}
+                            <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('socio_detalle', socio_id=s.id) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-3">No hay usuarios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

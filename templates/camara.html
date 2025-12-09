@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Kiosko cámara{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="mb-4">Kiosko de acceso por rostro</h3>
+
+    <div class="row">
+        <!-- COLUMNA CÁMARA -->
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header">Cámara</div>
+                <div class="card-body text-center">
+                    <img id="video-stream" src="{{ url_for('video_feed') }}" class="img-fluid rounded border"
+                        style="max-height: 480px; object-fit: cover;" alt="Video cámara">
+                </div>
+            </div>
+            <p class="text-muted small mb-0">
+                Asegúrate de que la cara esté centrada y bien iluminada antes de reconocer el rostro.
+            </p>
+        </div>
+
+        <!-- COLUMNA ESTADO / CONTROLES -->
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header">Estado de acceso</div>
+                <div class="card-body">
+                    <h5 id="estado-titulo" class="card-title text-danger">
+                        No se detectó ningún rostro
+                    </h5>
+
+                    <p class="mb-1">
+                        <strong>Usuario:</strong>
+                        <span id="estado-usuario">—</span>
+                    </p>
+                    <p class="mb-1">
+                        <strong>Membresía:</strong>
+                        <span id="estado-membresia">—</span>
+                    </p>
+                    <p class="mb-1">
+                        <strong>Motivo:</strong>
+                        <span id="estado-motivo">—</span>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Distancia:</strong>
+                        <span id="estado-distancia">—</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Controles</div>
+                <div class="card-body">
+                    <button id="btnReconocer" class="btn btn-primary w-100 mb-2">
+                        Reconocer rostro ahora
+                    </button>
+                    <p class="small text-muted mb-0">
+                        Este modo está pensado para colocar el PC a la entrada y validar la
+                        membresía automáticamente usando el rostro.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const titulo = document.getElementById("estado-titulo");
+        const usuario = document.getElementById("estado-usuario");
+        const membresia = document.getElementById("estado-membresia");
+        const motivo = document.getElementById("estado-motivo");
+        const distancia = document.getElementById("estado-distancia");
+        const btn = document.getElementById("btnReconocer");
+
+        function actualizarEstado(data) {
+            if (!data) return;
+
+            console.log("Respuesta /api/reconocer-rostro:", data);
+
+            if (data.permitido === true) {
+                titulo.textContent = data.mensaje || "Acceso autorizado";
+                titulo.classList.remove("text-danger");
+                titulo.classList.add("text-success");
+            } else if (data.permitido === false) {
+                titulo.textContent = data.mensaje || "Acceso denegado";
+                titulo.classList.remove("text-success");
+                titulo.classList.add("text-danger");
+            } else {
+                titulo.textContent = data.mensaje || "No se detectó ningún rostro";
+                titulo.classList.remove("text-success", "text-danger");
+            }
+
+            usuario.textContent = data.nombre || "—";
+            membresia.textContent = data.membresia || "—";
+            motivo.textContent = data.motivo || "—";
+
+            if (typeof data.distancia === "number") {
+                distancia.textContent = data.distancia.toFixed(2);
+            } else if (data.distancia) {
+                distancia.textContent = data.distancia;
+            } else {
+                distancia.textContent = "—";
+            }
+        }
+
+        let llamadaEnCurso = false;
+
+        async function llamarReconocer() {
+            if (llamadaEnCurso) return;
+            llamadaEnCurso = true;
+            try {
+                const resp = await fetch("{{ url_for('api_reconocer_rostro') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: "{}"
+                });
+                const data = await resp.json();
+                actualizarEstado(data);
+            } catch (err) {
+                console.error("Error llamando a /api/reconocer-rostro", err);
+            } finally {
+                llamadaEnCurso = false;
+            }
+        }
+
+        if (btn) {
+            btn.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                llamarReconocer();
+            });
+        }
+
+        // 🔁 Reconocimiento automático ~cada 1 segundo
+        setInterval(llamarReconocer, 1000);
+    });
+</script>
+{% endblock %}

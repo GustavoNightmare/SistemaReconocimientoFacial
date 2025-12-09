@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Rostro de {{ socio.nombre }} {{ socio.apellido }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        Rostro de {{ socio.nombre }} {{ socio.apellido }}
+    </h1>
+    <a href="{{ url_for('socio_detalle', socio_id=socio.id) }}" class="btn btn-outline-secondary">
+        ← Volver al usuario
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Cámara + captura -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                Vista de cámara / captura de rostro
+            </div>
+            <div class="card-body">
+                <div class="bg-dark rounded overflow-hidden mb-3">
+                    <!-- ✅ También usa /video_feed -->
+                    <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Cámara" class="w-100" />
+                </div>
+
+                <button id="btn-capturar" class="btn btn-primary">
+                    Capturar / actualizar rostro
+                </button>
+
+                <p id="msg-rostro" class="mt-3 text-muted small">
+                    Asegúrate de que {{ socio.nombre }} mire de frente, con la cara centrada y buena iluminación.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info del usuario -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                Información del usuario
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Nombre:</strong> {{ socio.nombre }} {{ socio.apellido }}</p>
+                <p class="mb-1"><strong>Cédula:</strong> {{ socio.cedula }}</p>
+                {% if socio.edad %}
+                <p class="mb-1"><strong>Edad:</strong> {{ socio.edad }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const btnCapturar = document.getElementById("btn-capturar");
+    const msg = document.getElementById("msg-rostro");
+
+    btnCapturar.addEventListener("click", async () => {
+        btnCapturar.disabled = true;
+        const originalText = btnCapturar.textContent;
+        btnCapturar.textContent = "Capturando...";
+
+        try {
+            const resp = await fetch("{{ url_for('api_capturar_rostro', socio_id=socio.id) }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await resp.json();
+
+            if (data.ok) {
+                msg.textContent = data.mensaje || "Rostro capturado correctamente.";
+                msg.className = "mt-3 text-success";
+            } else {
+                msg.textContent = data.mensaje || "No se pudo capturar el rostro.";
+                msg.className = "mt-3 text-danger";
+            }
+        } catch (err) {
+            console.error(err);
+            msg.textContent = "Error de comunicación con el servidor.";
+            msg.className = "mt-3 text-danger";
+        } finally {
+            btnCapturar.disabled = false;
+            btnCapturar.textContent = originalText;
+        }
+    });
+</script>
+{% endblock %}

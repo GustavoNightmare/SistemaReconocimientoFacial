@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Renovar membresía{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Renovar membresía de {{ socio.nombre }} {{ socio.apellido }}</h1>
+    <a href="{{ url_for('socio_detalle', socio_id=socio.id) }}" class="btn btn-outline-secondary">
+        Volver
+    </a>
+</div>
+
+<form method="post" class="card p-3 shadow-sm">
+    <div class="mb-3">
+        <label for="tipo_codigo" class="form-label">Nuevo tipo de membresía</label>
+        <select class="form-select" id="tipo_codigo" name="tipo_codigo" required>
+            <option value="">Selecciona una opción</option>
+            {% for t in tipos %}
+            <option value="{{ t[0] }}">{{ t[0] }} - {{ t[1] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="valor_pagado" class="form-label">Valor pagado</label>
+        <input type="number" class="form-control" id="valor_pagado" name="valor_pagado" min="0" step="1000">
+    </div>
+
+    <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">Renovar</button>
+    </div>
+</form>
+{% endblock %}
