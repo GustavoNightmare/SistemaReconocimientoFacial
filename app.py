@@ -396,17 +396,25 @@ def requiere_login(fn):
 @app.route("/")
 @requiere_login
 def dashboard():
-    hoy = date.today().isoformat()
     conn = get_connection()
     conn.row_factory = None
     cur = conn.cursor()
 
+    # --- obtener la fecha "de hoy" según SQLite (localtime) ---
+    cur.execute("SELECT DATE('now','localtime')")
+    hoy = cur.fetchone()[0]
+
+    # --- contar SOLO socios permitidos, ÚNICOS por día ---
     cur.execute("""
-        SELECT COUNT(*) FROM accesos
-        WHERE DATE(momento) = ?
-    """, (hoy,))
+        SELECT COUNT(DISTINCT socio_id)
+        FROM accesos
+        WHERE DATE(momento) = DATE('now','localtime')
+          AND permitido = 1
+          AND socio_id IS NOT NULL
+    """)
     accesos_hoy = cur.fetchone()[0]
 
+    # --- listar SOLO accesos permitidos (últimos 20), sin desconocidos ---
     cur.execute("""
         SELECT a.momento, a.permitido, a.motivo,
                s.nombre, s.apellido, s.cedula,
@@ -414,6 +422,8 @@ def dashboard():
         FROM accesos a
         LEFT JOIN socios s ON s.id = a.socio_id
         LEFT JOIN tipo_membresia tm ON tm.codigo = a.tipo_membresia_codigo
+        WHERE a.permitido = 1
+          AND a.socio_id IS NOT NULL
         ORDER BY a.momento DESC
         LIMIT 20
     """)
@@ -440,10 +450,10 @@ def dashboard():
         accesos=accesos,
     )
 
-
 # ==========================
 #  USUARIOS (socios)
 # ==========================
+
 
 @app.route("/socios")
 @requiere_login
@@ -594,6 +604,48 @@ def socio_editar(socio_id):
         return redirect(url_for("socio_detalle", socio_id=socio_id))
 
     return render_template("socio_editar.html", socio=socio)
+
+
+@app.route("/socios/<int:socio_id>/eliminar", methods=["POST"])
+@requiere_login
+def socio_eliminar(socio_id):
+    socio = obtener_socio_por_id(socio_id)
+    if not socio:
+        flash("Usuario no encontrado", "danger")
+        return redirect(url_for("socios_listado"))
+
+    cedula = socio["cedula"]
+
+    # 1) borrar embeddings de esa cédula
+    try:
+        for fn in os.listdir(DB_EMB_DIR):
+            if fn.startswith(f"{cedula}__") and fn.endswith(".npy"):
+                try:
+                    os.remove(os.path.join(DB_EMB_DIR, fn))
+                except OSError:
+                    pass
+    except FileNotFoundError:
+        pass
+
+    # 2) borrar registros dependientes en BD (accesos, membresías, socio)
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # si tienes claves foráneas sin ON DELETE CASCADE,
+    # hay que borrar primero hijos:
+    cur.execute("DELETE FROM accesos WHERE socio_id = ?", (socio_id,))
+    cur.execute("DELETE FROM membresias WHERE socio_id = ?", (socio_id,))
+    cur.execute("DELETE FROM socios WHERE id = ?", (socio_id,))
+
+    conn.commit()
+    conn.close()
+
+    # 3) recargar embeddings en memoria
+    global db_embeddings
+    db_embeddings = load_db_embeddings()
+
+    flash("Usuario eliminado correctamente", "success")
+    return redirect(url_for("socios_listado"))
 
 
 # ==========================
