@@ -855,7 +855,7 @@ def api_reconocer_rostro():
 
 if __name__ == "__main__":
     try:
-        app.run(host="127.0.0.1", port=5000, debug=False, threaded=True)
+        app.run(host="127.0.0.1", port=5001, debug=False, threaded=True)
     finally:
         with cap_lock:
             if cap is not None and cap.isOpened():
