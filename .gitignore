@@ -2,3 +2,5 @@ __pycache__/
 .venv/
 deepface_db/
 gimnasio.db/
+venv/
+__pycache__/
