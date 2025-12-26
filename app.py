@@ -36,7 +36,7 @@ app.secret_key = "cambia_esta_clave_super_secreta"
 # ==========================
 
 cap_lock = threading.Lock()
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("❌ No se pudo abrir la cámara en el índice 0")
 else:
