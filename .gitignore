@@ -2,5 +2,14 @@ __pycache__/
 .venv/
 deepface_db/
 gimnasio.db/
+# Entornos virtuales de Python
 venv/
+.env/
+
+# Archivos de Python
 __pycache__/
+*.pyc
+*.pyo
+
+# Archivos del sistema
+.DS_Store
